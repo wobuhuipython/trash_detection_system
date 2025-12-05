@@ -252,9 +252,13 @@ class DatabaseManager:
     
     def get_detection_count(self, source_type: str = None) -> int:
         """获取检测记录总数"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return 0
+            cursor = conn.cursor()
             
             sql = "SELECT COUNT(*) FROM detection_history"
             params = []
@@ -263,19 +267,30 @@ class DatabaseManager:
                 sql += " WHERE source_type = %s"
                 params.append(source_type)
             
-            self.cursor.execute(sql, params)
-            result = self.cursor.fetchone()
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
             return result[0] if result else 0
             
         except Error as e:
             print(f"获取检测记录总数失败: {e}")
             return 0
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
     
     def get_latest_detection_time(self, source_type: str = None) -> Optional[datetime]:
         """获取最新检测记录的时间"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return None
+            cursor = conn.cursor()
             
             sql = "SELECT MAX(detection_time) FROM detection_history"
             params = []
@@ -284,9 +299,20 @@ class DatabaseManager:
                 sql += " WHERE source_type = %s"
                 params.append(source_type)
             
-            self.cursor.execute(sql, params)
-            result = self.cursor.fetchone()
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
             return result[0] if result and result[0] else None
+            
+        except Error as e:
+            print(f"获取最新检测时间失败: {e}")
+            return None
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
             
         except Error as e:
             print(f" 获取最新检测时间失败: {e}")
