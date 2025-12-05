@@ -313,16 +313,16 @@ class DatabaseManager:
             if conn:
                 try: conn.close()
                 except: pass
-            
-        except Error as e:
-            print(f" 获取最新检测时间失败: {e}")
-            return None
     
     def get_detection_history_after(self, after_time: datetime, source_type: str = None, limit: int = 50) -> List[Dict]:
         """获取指定时间之后的检测记录"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return []
+            cursor = conn.cursor()
             
             # 构建查询SQL
             sql = """
@@ -340,8 +340,8 @@ class DatabaseManager:
             sql += " ORDER BY detection_time DESC LIMIT %s"
             params.append(limit)
             
-            self.cursor.execute(sql, params)
-            results = self.cursor.fetchall()
+            cursor.execute(sql, params)
+            results = cursor.fetchall()
             
             # 转换为字典列表
             history = []
@@ -362,16 +362,27 @@ class DatabaseManager:
         except Error as e:
             print(f"获取增量检测历史失败: {e}")
             return []
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
     
     def delete_detection_record(self, record_id: int) -> bool:
         """删除检测记录"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return False
+            cursor = conn.cursor()
             
             sql = "DELETE FROM detection_history WHERE id = %s"
-            self.cursor.execute(sql, (record_id,))
-            self.connection.commit()
+            cursor.execute(sql, (record_id,))
+            conn.commit()
             
             print(f"检测记录已删除: ID {record_id}")
             return True
@@ -379,48 +390,81 @@ class DatabaseManager:
         except Error as e:
             print(f"删除检测记录失败: {e}")
             return False
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
     
     def get_image_data(self, record_id: int) -> Optional[bytes]:
         """获取图片数据"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return None
+            cursor = conn.cursor()
             
             sql = "SELECT image_data FROM detection_history WHERE id = %s"
-            self.cursor.execute(sql, (record_id,))
-            result = self.cursor.fetchone()
+            cursor.execute(sql, (record_id,))
+            result = cursor.fetchone()
             
             return result[0] if result and result[0] else None
             
         except Error as e:
             print(f"获取图片数据失败: {e}")
             return None
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
     
     def get_result_image_data(self, record_id: int) -> Optional[bytes]:
         """获取结果图片数据"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return None
+            cursor = conn.cursor()
             
             sql = "SELECT result_image_data FROM detection_history WHERE id = %s"
-            self.cursor.execute(sql, (record_id,))
-            result = self.cursor.fetchone()
+            cursor.execute(sql, (record_id,))
+            result = cursor.fetchone()
             
             return result[0] if result and result[0] else None
             
         except Error as e:
             print(f"获取结果图片数据失败: {e}")
             return None
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
     
     def clear_old_records(self, days: int = 30) -> bool:
         """清理旧记录"""
+        conn = None
+        cursor = None
         try:
-            if not self._ensure_connection():
+            conn = self._get_connection()
+            if not conn:
                 return False
+            cursor = conn.cursor()
             
             sql = "DELETE FROM detection_history WHERE detection_time < DATE_SUB(NOW(), INTERVAL %s DAY)"
-            self.cursor.execute(sql, (days,))
-            self.connection.commit()
+            cursor.execute(sql, (days,))
+            conn.commit()
             
             print(f"已清理{days}天前的检测记录")
             return True
@@ -428,6 +472,13 @@ class DatabaseManager:
         except Error as e:
             print(f"清理旧记录失败: {e}")
             return False
+        finally:
+            if cursor:
+                try: cursor.close()
+                except: pass
+            if conn:
+                try: conn.close()
+                except: pass
 
     # ========== 反馈相关方法 ==========
     
