@@ -1,0 +1,33 @@
+PyQt5==5.15.11
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.17.0
+
+
+opencv-python==4.10.0.84
+ultralytics==8.3.34
+# torch==2.5.1+cu124
+# torchvision==0.20.1+cu124
+# torchaudio==2.5.1+cu124     #gpu�汾�����û��gpu������cpu�汾pip install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple
+numpy==2.0.2
+
+
+
+requests==2.32.3
+
+
+pypinyin==0.54.0
+
+
+psutil==6.1.0
+
+
+certifi==2024.6.2
+urllib3==1.26.20
+
+# MySQL数据库支持
+mysql-connector-python==8.2.0
+PyMySQL==1.1.0
+
+#前端
+flask>=2.0.0
+flask-cors>=3.0.0
